@@ -96,7 +96,8 @@ def main():
     l_nomi_incl=nomiIncl(df_meas)
     d_dates=DatesPerIncl(df_meas,l_nomi_incl)[0]
     l_dates=DatesPerIncl(df_meas,l_nomi_incl)[1]
-    pos_incl={'n40':[0.0,0.0,0.0],'n41':[25.0,30.0,8.0],'n30':[-15.0,-30.0,-6.0]}
+    pos_incl={'CR1':[0.0,0.0,0.0],'CR2':[25.0,30.0,8.0],'I1':[-15.0,-30.0,-6.0],'I2':[-50.0,-50.0,-0.0],
+              'I3':[50.0,50.0,-0.0],'I4':[70.0,-50.0,6.3],'I5':[-70.0,50.0,-8.3],'I6':[90.0,-80.0,12]}
 
     # creation of dxf file of all dispacements
     drawing = ezdxf.new(dxfversion='R2010')
