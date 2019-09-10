@@ -56,7 +56,7 @@ def Readtxt(folder):
 def ReadXLS(folder):
     
     l_files=[]
-    
+    d=[]
     for file in os.listdir(folder):
         l_files.append(file)
     
@@ -73,12 +73,13 @@ def ReadXLS(folder):
         date_installation=sheet_data.iloc[8,8]
         #date_installation_str=sheet_data.iloc[8,8]
         #date_installation=datetime.datetime.strptime(date_installation_str, "%d/%m/%Y").date()
-        date_misu=sheet_data.iloc[3,4]
+        date_misu_raw=sheet_data.iloc[3,4]
+
+        if type(date_misu_raw)==pd._libs.tslibs.timestamps.Timestamp:
+            date_misu=date_misu_raw.date()
+        else:
+            date_misu=datetime.datetime.strptime(date_misu_raw, "%d/%m/%Y").date()
         
-        print(type(date_misu))
-        #date_misu_str=sheet_data.iloc[3,4]
-        #date_misu=datetime.datetime.strptime(date_misu_str, "%d/%m/%Y").date()  
-    
         # clean raw_incl_data DataFrame from rows and columns with Nan values
         raw_incl_data=sheet_data.iloc[11::]
         raw_incl_data=raw_incl_data.dropna(axis=1, how='all')
@@ -102,7 +103,7 @@ def ReadXLS(folder):
         # calculate displacement components
         E_disp=[]
         N_disp=[]
-        d=[]
+        
         for i in range(0,len(raw_incl_data['RISULTANTE(mm)'])):
             E_disp=raw_incl_data['RISULTANTE(mm)'].iloc[i]*math.cos(raw_incl_data['AZIMUT(°)'].iloc[i])
             N_disp=raw_incl_data['RISULTANTE(mm)'].iloc[i]*math.sin(raw_incl_data['AZIMUT(°)'].iloc[i])
@@ -113,43 +114,17 @@ def ReadXLS(folder):
                       "resultant":raw_incl_data["RISULTANTE(mm)"].iloc[i],
                       "angle":raw_incl_data["AZIMUT(°)"].iloc[i]})
 
-        df_meas_data= pd.DataFrame(d)
-        df_meas_data=df_meas_data.set_index("tube_name")
+    df_meas_data= pd.DataFrame(d)
+    df_meas_data=df_meas_data.set_index("tube_name")
     
-        return(df_meas_data)
+    return(df_meas_data)
 
-def ReadXLSv2(folder):
-    
-    l_files=[]
-    
-    for file in os.listdir(folder):
-        l_files.append(file)
-    
-    for file_name in l_files:
-        
-        # read integrated measures sheetname from DataFrame 
-        xl=pd.ExcelFile(folder+'/'+file_name)
-        sheet_name_general_data='Dati Generali'
-        sheet_general_data=pd.read_excel(folder+'/'+file_name, sheet_name=sheet_name_general_data)
-        sheet_name_int='(1)'
-        sheet_data=pd.read_excel(folder+'/'+file_name, sheet_name=sheet_name_int)
-        
-        # read general information
-        tube_name=sheet_general_data.iloc[2,4]
-        date_misu_str=sheet_data.iloc[0,89]
-        print(date_misu_str)
-        date_misu=datetime.datetime.strptime(date_misu_str, "%d/%m/%Y").date()  
- 
-        # calculate displacement components
-        E_disp=sheet_data.iloc[3:len(sheet_data),27].values.tolist()
-        N_disp=sheet_data.iloc[3:len(sheet_data),28].values.tolist()
-        
-        
 
 def main():
     folder="./Dati inclinometri xls"
     #df_meas=Readtxt(folder)
     df_meas=ReadXLS(folder)
+    
 # call the main function
 if __name__ == "__main__":
     main()
