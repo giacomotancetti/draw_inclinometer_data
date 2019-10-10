@@ -11,6 +11,7 @@ import os
 import datetime
 import math
 
+       
 def Readtxt(folder):
     
     l_files=[]
@@ -25,19 +26,48 @@ def Readtxt(folder):
         root=l_root[i]
         
         for file in l_files[i]:
-            if file[-6:-4]!="_l":
+            if (file[-6:-4]!="_l") or (file[-6:-4]!="_L"):
                 path=root+"/"+file
-                
                 f = open(path,"r")
                 l_rows=f.readlines()
                 f.close()
+                
+            tube_name=l_rows[1].split()[1]
+            date_installation=l_rows[4].split()[4]
             
-                tube_name=l_rows[1].split()[1]
-                date_installation=l_rows[4].split()[4]
-                date_misu_str=l_rows[7].split()[2]
+            # find '\n' rows in l_rows and find first line of last measurement
+            l_i=[]
+            for i in range(0,len(l_rows)):
+                if l_rows[i]=="\n":
+                    l_i.append(i)
+            zero_row=l_i[-1]
+                
+            # check report type
+            # report type 1: Prof.[m],Risultante[mm],Azimut[gradi]
+            if len(l_rows[9])==42:
+
+                date_misu_str=l_rows[zero_row+2].split()[2]
                 date_misu=datetime.datetime.strptime(date_misu_str, "%d/%m/%Y").date()
+
+                for i in range(zero_row+5,len(l_rows)):
+                    row=l_rows[i].split()
+                    # replacing , with . for str to float conversion
+                    depth=float(row[0].replace(",","."))
+                    ris=float(row[1].replace(",","."))
+                    alpha=float(row[2].replace(",","."))
+                    alpha_rad=math.radians(alpha)
+                    E_disp=ris*math.cos(alpha_rad)
+                    N_disp=ris*math.sin(alpha_rad)
+                    
+                    d.append({"tube_name":tube_name,"date":date_misu,"depth":depth,"E_disp":E_disp,"N_disp":N_disp,"resultant":ris,"angle":alpha})
             
-                for i in range(10,len(l_rows)):
+            # report type 2: Prof.[m],Spost.Est[mm],Spost.Nord[mm],Risultante[mm],Azimut[gradi]  
+            else:
+                # find '\n' rows in l_rows and find first line of last measurement                
+                date_misu_str=l_rows[zero_row+2].split()[2]
+                date_misu=datetime.datetime.strptime(date_misu_str, "%d/%m/%Y").date()
+                
+                for i in range(zero_row+5,len(l_rows)):
                     row=l_rows[i].split()
                     # replacing , with . for str to float conversion
                     depth=float(row[0].replace(",","."))
@@ -45,7 +75,7 @@ def Readtxt(folder):
                     N_disp=float(row[2].replace(",","."))
                     ris=float(row[3].replace(",","."))
                     alpha=float(row[4].replace(",","."))
-    
+
                     d.append({"tube_name":tube_name,"date":date_misu,"depth":depth,"E_disp":E_disp,"N_disp":N_disp,"resultant":ris,"angle":alpha})
                     
     df_meas_data= pd.DataFrame(d)
@@ -119,11 +149,10 @@ def ReadXLS(folder):
     
     return(df_meas_data)
 
-
 def main():
-    folder="./Dati inclinometri xls"
-    #df_meas=Readtxt(folder)
-    df_meas=ReadXLS(folder)
+    folder="./inclinometri_vds"
+    df_meas=Readtxt(folder)
+    #df_meas=ReadXLS(folder)
     
 # call the main function
 if __name__ == "__main__":
