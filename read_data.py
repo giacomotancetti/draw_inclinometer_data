@@ -17,20 +17,20 @@ def Readtxt(folder):
     l_files=[]
     l_root=[]
     
-    for root, dirs, files in os.walk(folder):
-        l_root.append(root)
-        l_files.append(files)
-    d=[]
+    #check for txt files in data folder
+    for root, dirs, files in os.walk(folder):      
+        for file in files:
+            if '.txt' or '.TXT' in file:
+                l_files.append(os.path.join(root, file))
     
-    for i in range(0,len(l_root)):
-        root=l_root[i]
-        
-        for file in l_files[i]:
-            if (file[-6:-4]!="_l") or (file[-6:-4]!="_L"):
-                path=root+"/"+file
-                f = open(path,"r")
-                l_rows=f.readlines()
-                f.close()
+    # extract data from txt files
+    d=[]
+    for file in l_files:
+        if (file[-6:-4]!="_l") or (file[-6:-4]!="_L"):
+
+            f = open(file,"r")
+            l_rows=f.readlines()
+            f.close()
                 
             tube_name=l_rows[1].split()[1]
             date_installation=l_rows[4].split()[4]
